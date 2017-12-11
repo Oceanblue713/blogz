@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template, session
+from flask import Flask, request, redirect, render_template, session, url_for
 from flask_sqlalchemy import SQLAlchemy
 import cgi, os, jinja2
 
@@ -58,6 +58,12 @@ def blog():
     blogs = Blog.query.all()
     return render_template('blogs.html', blogs=blogs)
 
+    if request.method == 'GET':
+        get_title =request.args.get('title')
+        get_body = request.args.get('body')
+
+    id = Blog.query.get(blog_id)
+    return render_template('individual-blog.html', id = id)
 
 
 if __name__ == '__main__':
