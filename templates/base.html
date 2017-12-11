@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{{title}}</title>
+        <style>
+            .no_blog{
+                color: violet;
+            }
+            .error{
+                color: red;
+            }
+            h1{
+                text-align: center;
+            }
+        </style>
+    </head>
+
+    <body>
+        <a href="/blog">Main Blog Page</a> | <a href="/newpost">Add a Blog Enrty</a>
+        {% block content %}
+
+        {% endblock %}
+    </body>
+</html>
