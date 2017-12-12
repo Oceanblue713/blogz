@@ -44,26 +44,49 @@ def newpost():
             db.session.commit()
 
 
-            return redirect('/blog')
+            return redirect('/blog?id=' + str(new_blog.id))
 
     return render_template('add-blog.html')
 
 
-@app.route('/blog', methods =['POST','GET'])
+@app.route('/blog')
 def blog():
-    if request.method == 'POST':
-      title = request.form['title']
-      body = request.form['body']
+    blog_id = request.args.get('id')
+    if request.args:
+    #if (blog_id):
+        blog = db.session.query(Blog).filter_by(id = blog_id).first()    
+        #title =request.args.get('title')
+        #body = request.args.get('body')
         
+
+        return render_template('individual-blog.html', blog=blog)
+
     blogs = Blog.query.all()
     return render_template('blogs.html', blogs=blogs)
 
-    if request.method == 'GET':
-        get_title =request.args.get('title')
-        get_body = request.args.get('body')
+        
+        
 
-    id = Blog.query.get(blog_id)
-    return render_template('individual-blog.html', id = id)
+    #id = Blog.query.get(id)
+    #return render_template('individual-blog.html', id = id, title = title, body=body, blog=blog)
+                
+    #blogs = Blog.query.all()
+    #return render_template('blogs.html', blogs=blogs)
+
+
+#@app.route('/blog/<blog_id>' , methods =['GET'])
+#def get_blog():
+    
+    #if request.method == 'GET':
+        #get_id = request.args('id')
+        #get_title =request.args.get('title').first()
+        #get_body = request.args.get('body').first()
+
+    #get_title = Blog.query.get(title).first()
+    #get_body = Blog.query.get(body).first()
+
+    #id = Blog.query.get(id)
+    #return render_template('individual-blog.html', id = id, get_title = get_title, get_body=get_body)
 
 
 if __name__ == '__main__':
