@@ -1,4 +1,4 @@
-from flask import Flask, request, redirect, render_template, session, url_for
+from flask import Flask, request, redirect, render_template, session, flash
 from flask_sqlalchemy import SQLAlchemy
 import cgi, os, jinja2
 
@@ -10,6 +10,7 @@ app.config['DEBUG'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://blogz:Okinawa2016@localhost:8889/blogz'
 app.config['SLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
+app.secret_key = 'u337kGcys&zP3B'
 
 # Database
 class Blog(db.Model):
@@ -35,6 +36,30 @@ class User(db.Model):
         self.username = username
         self.password = password
 
+@app.route('/login', methods = ['POST', 'GET'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        user = User.query.filter_by(username = username).first()
+        if len(username) == 0 or len(password) == 0:
+            return render_template('login.html', login_error='Check blank space')
+        #elif username != username:
+            #return render_template('login.html', login_error='Invalid username')
+        elif user and user.password != password:
+            return render_template('login.html', login_error='Invalid password')
+        elif user and user.password == password:
+            session['username'] = username
+            return redirect('/newpost')
+        else:
+            return render_template('login.html', login_error='Invalid Username')
+
+    return render_template('login.html')
+
+@app.route('/signup', methods = ['POST', 'GET'])
+def signup():
+    return render_template('signup.html')
+
 
 @app.route('/')
 def index():
@@ -44,7 +69,7 @@ def index():
 @app.route('/newpost', methods = ['GET','POST'])
 def newpost():
 
-    #owner = User.query.filter_by(username = session['username']).first()
+    owner = User.query.filter_by(username = session['username']).first()
     
     if request.method == 'POST':
         title = request.form['title']
