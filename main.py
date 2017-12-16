@@ -7,7 +7,7 @@ jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), a
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://build-a-blog:Okinawa2016@localhost:8889/build-a-blog'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://blogz:Okinawa2016@localhost:8889/blogz'
 app.config['SLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
 
@@ -17,14 +17,35 @@ class Blog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120))
     body = db.Column(db.String(500))
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    def __init__(self, title, body):
+    def __init__(self, title, body, owner):
         self.title = title
         self.body = body
+        self.owner = owner
+
+class User(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(120), unique=True)
+    password = db.Column(db.String(120))
+    blogs = db.relationship('Blog', backref='owner')
+
+    def __init__(self, username, password):
+        self.username = username
+        self.password = password
+
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 
 @app.route('/newpost', methods = ['GET','POST'])
 def newpost():
+
+    #owner = User.query.filter_by(username = session['username']).first()
+    
     if request.method == 'POST':
         title = request.form['title']
         body = request.form['body']
@@ -53,42 +74,12 @@ def newpost():
 def blog():
     blog_id = request.args.get('id')
     if request.args:
-    #if (blog_id):
+    
         blog = db.session.query(Blog).filter_by(id = blog_id).first()    
-        #title =request.args.get('title')
-        #body = request.args.get('body')
-        
-
         return render_template('individual-blog.html', blog=blog)
 
     blogs = Blog.query.all()
     return render_template('blogs.html', blogs=blogs)
 
-        
-        
-
-    #id = Blog.query.get(id)
-    #return render_template('individual-blog.html', id = id, title = title, body=body, blog=blog)
-                
-    #blogs = Blog.query.all()
-    #return render_template('blogs.html', blogs=blogs)
-
-
-#@app.route('/blog/<blog_id>' , methods =['GET'])
-#def get_blog():
-    
-    #if request.method == 'GET':
-        #get_id = request.args('id')
-        #get_title =request.args.get('title').first()
-        #get_body = request.args.get('body').first()
-
-    #get_title = Blog.query.get(title).first()
-    #get_body = Blog.query.get(body).first()
-
-    #id = Blog.query.get(id)
-    #return render_template('individual-blog.html', id = id, get_title = get_title, get_body=get_body)
-
-
 if __name__ == '__main__':
     app.run()
-
