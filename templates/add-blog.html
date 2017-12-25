@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h1> Add a Blog Entry</h1>
+    <h1> new post</h1>
     <form action="/newpost" method ="post">
         <label for = 'title'>
-            Title for your new blog:<br>
+            Title:<br>
             <br>
             <input type = "text" name = 'title' />
             <p class = 'error'>{{title_error}}</p>
@@ -12,13 +12,13 @@
         <h1></h1>
 
         <label for ='body'>
-            Your new blog:<br>
+            Post:<br>
             <br>
             <textarea id="body" name ='body' cols='50' rows='10'></textarea>
             <p class = 'error'>{{body_error}}</p>
         </label>
         <h1></h1>
-        <input type = "submit" value = 'Add Entry' />
+        <input type = "submit" value = 'send' />
     </form>
 
 {% endblock %}

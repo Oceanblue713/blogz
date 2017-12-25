@@ -36,6 +36,12 @@ class User(db.Model):
         self.username = username
         self.password = password
 
+@app.before_request
+def require_login():
+    allowed_routes = ['login', 'signup']
+    if request.endpoint not in allowed_routes and 'username' not in session:
+        return redirect('/login')
+
 @app.route('/login', methods = ['POST', 'GET'])
 def login():
     if request.method == 'POST':
@@ -58,8 +64,39 @@ def login():
 
 @app.route('/signup', methods = ['POST', 'GET'])
 def signup():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        verify = request.form['verify']
+
+        existing_user = User.query.filter_by(username=username).first()
+
+        if existing_user:
+            return render_template('signup.html', username_error = "This user already exists")
+        elif len(username) < 4 and len(password) < 4:
+            return render_template('signup.html', username_error="That's not a vaild" ,password_error="That's not a valid password",verify_error="Passwords don't match")
+        elif len(username) < 4 or ' ' in username:
+            return render_template('signup.html', username_error="That's not a vaild")
+        elif len(password) < 4 or ' ' in password:
+            return render_template('signup.html', password_error="That's not a valid password")
+        elif password != verify:
+            return render_template('signup.html', verify_error="Passwords don't match")
+    
+
+        if not existing_user:
+            new_user = User(username, password)
+            db.session.add(new_user)
+            db.session.commit()
+            session['username'] = username
+            return redirect('/newpost')
+        else:
+            return render_template('signup.html', username_error = "This user already exists")
     return render_template('signup.html')
 
+@app.route('/logout')
+def logout():
+    del session['username']
+    return redirect('/blog')
 
 @app.route('/')
 def index():
@@ -85,7 +122,7 @@ def newpost():
         elif len(body) <= 0:
             return render_template('add-blog.html', body_error = "Please fill in the body")
         else:
-            new_blog = Blog(title, body)
+            new_blog = Blog(title, body, owner)
             db.session.add(new_blog)
             db.session.commit()
 
