@@ -19,6 +19,7 @@ class Blog(db.Model):
     title = db.Column(db.String(120))
     body = db.Column(db.String(500))
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    #users = db.relationship('User', backref = 'username')
 
     def __init__(self, title, body, owner):
         self.title = title
@@ -100,7 +101,14 @@ def logout():
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    user_id = request.args.get('id')
+    if request.args:
+    
+        user = db.session.query(User).filter_by(id = user_id).first()    
+        return redirect('/blog?user=' + str(user_id.username))
+
+    users = User.query.all()
+    return render_template('index.html', users = users)
 
 
 @app.route('/newpost', methods = ['GET','POST'])
@@ -132,16 +140,32 @@ def newpost():
     return render_template('add-blog.html')
 
 
-@app.route('/blog')
+@app.route('/blog', methods=['GET'])
 def blog():
+    user_name = request.args.get('user')
     blog_id = request.args.get('id')
-    if request.args:
-    
-        blog = db.session.query(Blog).filter_by(id = blog_id).first()    
-        return render_template('individual-blog.html', blog=blog)
+    print('blog')
+
+    #if request.args.get('/blog?id='):
+    #if request.args:     
+    #if blog_id:
+    if user_name:
+        #blog = db.session.query(Blog).filter_by(id = blog_id).first()
+        user = db.session.query(User).filter_by(username = user_name).first()
+        blogs = Blog.query.all()
+        print('id')
+        return render_template('singleUser.html', user=user,blogs=user.blogs)
+    if blog_id:
+        blog = db.session.query(Blog).filter_by(id = blog_id).first()
+        user = db.session.query(User).filter_by(username = user_name).first()
+        return render_template('individual-blog.html',blog=blog, user=user)
+
+    #if request.args.get('/blog?user='):
+        #return render_template('singleUser.html')
 
     blogs = Blog.query.all()
     return render_template('blogs.html', blogs=blogs)
+    
 
 if __name__ == '__main__':
     app.run()
